@@ -191,11 +191,16 @@ function selectorCorte(){
 function vistaInicio() {
   const searchLower = STATE.busq.toLowerCase();
   const f1 = SECCIONES_LIST.filter(s => s.label.toLowerCase().includes(searchLower));
-  const porGrado = GRADOS.map(g => ({ grado: g, sec: f1.filter(x => x.grado === g) })).filter(x => x.sec.length);
+  
+  // Agrupamos por grado para los botones
+  const porGrado = GRADOS.map(g => ({ 
+    grado: g, 
+    secs: f1.filter(x => x.grado === g) 
+  })).filter(x => x.secs.length);
 
   const styles = {
-    container: `min-height:100vh; background:linear-gradient(135deg, #CF9FFF 0%, #E6E6FA 100%); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; font-family:'Source Sans 3',sans-serif;`,
-    card: `background:rgba(255,255,255,0.25); backdrop-filter:blur(10px); border-radius:16px; padding:20px; border:1px solid rgba(255,255,255,0.3); width:100%; max-width:600px; text-align:center; shadow: 0 8px 32px rgba(0,0,0,0.1);`,
+    container: `min-height:100vh; background:linear-gradient(135deg, #CF9FFF 0%, #E6E6FA 100%); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; font-family:sans-serif;`,
+    card: `background:rgba(255,255,255,0.25); backdrop-filter:blur(10px); border-radius:16px; padding:20px; border:1px solid rgba(255,255,255,0.3); width:100%; max-width:600px; text-align:center; box-shadow: 0 8px 32px rgba(0,0,0,0.1);`,
     label: `font-size:10px; color:#4B0082; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:3px; opacity:0.8;`
   };
 
@@ -207,59 +212,45 @@ function vistaInicio() {
           <img src="${CONFIG.escudo}" style="width:110px; height:110px; border-radius:50%; object-fit:cover; border:3px solid #fff; box-shadow:0 4px 15px rgba(0,0,0,0.1);">
         </div>
 
-        <h1 style="font-family:'Playfair Display',serif; color:#fff; font-size:42px; margin:0; line-height:1.1;">Trayectorias Cuidadas</h1>
+        <h1 style="font-family:serif; color:#fff; font-size:42px; margin:0; line-height:1.1;">Trayectorias Cuidadas</h1>
         <p style="color:#fff; font-weight:600; margin-bottom:24px;">Aprendizajes Significativos</p>
 
         <div style="background:rgba(255,255,255,0.2); border-radius:12px; padding:15px; margin-bottom:10px; border:1px solid rgba(255,255,255,0.2);">
           <div style="${styles.label}">Institución</div>
-          <div style="color:#fff; font-size:18px; font-weight:700; font-family:'Playfair Display',serif;">${CONFIG.nombreEscuela}</div>
+          <div style="color:#fff; font-size:18px; font-weight:700;">${CONFIG.nombreEscuela}</div>
         </div>
 
-        <div style="background:rgba(255,255,255,0.2); border-radius:12px; padding:15px; border:1px solid rgba(255,255,255,0.2);">
+        <div style="background:rgba(255,255,255,0.2); border-radius:12px; padding:15px; border:1px solid rgba(255,255,255,0.2); margin-bottom:20px;">
           <div style="${styles.label}">Directora / Director</div>
-          <div style="color:#fff; font-size:18px; font-weight:700; font-family:'Playfair Display',serif;">${CONFIG.directora}</div>
+          <div style="color:#fff; font-size:18px; font-weight:700;">${CONFIG.directora}</div>
         </div>
 
+        <div style="background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.3); border-radius:18px; padding:20px; margin-bottom:12px">
+          <div style="font-weight:700; color:#fff; font-size:15px; margin-bottom:4px">📚 Acceso Docente por Sección</div>
+          <input value="${STATE.busq}" placeholder="Buscar sección..." style="background:rgba(255,255,255,0.2); color:#1e293b; border:1px solid rgba(255,255,255,0.3); margin-bottom:12px" oninput="setState({busq:this.value})"/>
+          
+          <div style="max-height:260px; overflow-y:auto; display:flex; flex-direction:column; gap:10px">
+            ${porGrado.map(({grado, secs}) => `
+              <div style="text-align:left;">
+                <div style="color:#fff; font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:5px">${grado} Grado</div>
+                <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:5px">
+                  ${secs.map(s => `
+                    <button onclick="selSeccion('${s.id}')" style="background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.25); border-radius:9px; padding:10px 6px; color:#fff; cursor:pointer; font-weight:700; font-size:13px; text-align:center">
+                      Secc. ${s.seccion}
+                    </button>
+                  `).join("")}
+                </div>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+
+        <button onclick="irDirectivo()" style="width:100%; background:#14532d; color:#fff; border:none; border-radius:14px; padding:18px 24px; font-weight:700; font-size:16px; cursor:pointer; box-shadow:0 4px 20px rgba(0,0,0,0.1)">
+          🏫 Vista Directivo · Toda la Escuela
+        </button>
       </div>
     </div>
   `;
-}
-
-        <!-- Gabriela Pafume -->
-        <div style="background:#ffffff15;border-radius:10px;padding:8px 16px;margin-bottom:12px;border:1px solid #ffffff20">
-          <div style="font-size:10px;color:#14532d;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px">Licenciada en Educación</div>
-          <div style="color:#fff;font-size:14px;font-weight:700">Gabriela Pafume</div>
-        </div>
-
-        <p style="color:#14532d;font-size:13px;margin:0 0 10px">Lengua y Matemática · 1° a 6° · Secciones A · B · C · D<br/>Cortes: Mayo · Agosto · Diciembre</p>
-        <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap">
-          ${MARCAS.map(m=>`<span style="background:#ffffff25;border:1px solid #ffffff40;border-radius:20px;padding:3px 12px;font-size:11px;color:#fff;font-weight:700">♿ ${m}</span>`).join("")}
-        </div>
-      </div>
-
-      <div style="background:#ffffff20;border:1px solid #ffffff30;border-radius:18px;padding:20px;margin-bottom:12px">
-        <div style="font-weight:700;color:#fff;font-size:15px;margin-bottom:4px">📚 Acceso Docente por Sección</div>
-        <p style="color:#14532d;font-size:13px;margin-bottom:14px">Seleccioná tu grado y sección</p>
-        <input value="${STATE.busq}" placeholder="Buscar sección..." style="background:#ffffff20;color:#1e293b;border:1px solid #ffffff30;margin-bottom:12px" oninput="setState({busq:this.value})"/>
-        <div style="max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:10px">
-          ${porGrado.map(({grado,secs})=>`
-            <div>
-              <div style="color:#fff;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">${grado} Grado</div>
-              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px">
-                ${secs.map(s=>`<button onclick="selSeccion('${s.id}')" style="background:#ffffff15;border:1px solid #ffffff25;border-radius:9px;padding:10px 6px;color:#fff;cursor:pointer;font-weight:700;font-size:13px;font-family:'Source Sans 3',sans-serif;text-align:center">
-                  Secc. ${s.seccion}
-                </button>`).join("")}
-              </div>
-            </div>`).join("")}
-        </div>
-      </div>
-
-      <button onclick="irDirectivo()" style="width:100%;background:#14532d;color:#fff;border:none;border-radius:14px;padding:18px 24px;font-weight:700;font-size:16px;cursor:pointer;font-family:'Source Sans 3',sans-serif;box-shadow:0 4px 20px #16a34a44">
-        🏫 Vista Directivo · Toda la Escuela
-      </button>
-      <p style="color:#14532d;font-size:11px;text-align:center;margin-top:16px">Datos guardados en la nube · Firebase</p>
-    </div>
-  </div>`;
 }
 
 function header(t,s){
