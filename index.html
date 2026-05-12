@@ -191,7 +191,7 @@ function selectorCorte(){
 function vistaInicio(){
   const fl=SECCIONES_LIST.filter(s=>s.label.toLowerCase().includes(STATE.busq.toLowerCase()));
   const porGrado=GRADOS.map(g=>({grado:g,secs:fl.filter(s=>s.grado===g)})).filter(x=>x.secs.length);
-  return`<div style="min-height:100vh;background:linear-gradient(160deg,#f0fdf4 0%,#86efac 40%,#16a34a 75%,#14532d 100%);display:flex;align-items:center;justify-content:center;padding:24px">
+return `<div style="min-height:100vh; background:linear-gradient(135deg, #CF9FFF 0%, #E6E6FA 100%); display:flex; align-items:center; justify-content:center; padding:24px">`
     <div style="width:100%;max-width:600px">
       <div style="text-align:center;margin-bottom:28px">
 
