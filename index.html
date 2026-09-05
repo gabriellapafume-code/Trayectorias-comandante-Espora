@@ -419,6 +419,65 @@ function vistaSeccion(){
   ${STATE.modal?modalEstudiante():""}${STATE.del?modalConfirmarBorrar():""}`;
 }
 
+// ── IMPORTACIÓN DE INFORMES (cualquier grado 1° a 6°) ─
+// Para cargar un nuevo informe: agregar una entrada acá con la clave "GRADO°SECCION"
+// (ej: "1°A", "3°C", "6°B"). Cada estudiante es un objeto con apellido, nombre,
+// y los campos que correspondan (escritura_<Corte>, lectura12_<Corte>,
+// fluidez_<Dimensión>_<Corte>, marca, nivel_escritura_ajuste_<Corte>, trayectoria, etc.)
+const IMPORTS_PENDIENTES={
+  "1°A":{
+    titulo:"Informe Marzo-Julio · 1°A",
+    descripcion:"Niveles de Marzo→Mayo y Julio→Agosto",
+    estudiantes:[
+      {apellido:"Chávez", nombre:"Tadeo Yuthiel", escritura_Mayo:"Diferenciada", escritura_Agosto:"Silábica alfabética"},
+      {apellido:"Cortez", nombre:"Milo", escritura_Mayo:"Silábica", escritura_Agosto:"Cuasialfabética"},
+      {apellido:"Gili", nombre:"Felipe Román", marca:"CUD", nivel_escritura_ajuste_Mayo:"Diferenciada"},
+      {apellido:"González", nombre:"Jeremías Yuthiel", escritura_Mayo:"Silábica", escritura_Agosto:"Silábica alfabética"},
+      {apellido:"González Montenegro", nombre:"Víctor Mateo", escritura_Mayo:"Silábica", escritura_Agosto:"Silábica alfabética"},
+      {apellido:"Nieva Toledo", nombre:"Emiliano Exequiel", escritura_Mayo:"Silábica", escritura_Agosto:"Cuasialfabética"},
+      {apellido:"Peralta", nombre:"Aaron Jaziel", escritura_Mayo:"Cuasialfabética", escritura_Agosto:"Alfabética"},
+      {apellido:"Quintero", nombre:"Noha Isaías", escritura_Mayo:"Cuasialfabética", escritura_Agosto:"Alfabética"},
+      {apellido:"Segovia", nombre:"Lian Martín", escritura_Mayo:"Diferenciada", escritura_Agosto:"Cuasialfabética"},
+      {apellido:"Torres", nombre:"Asael Ismael", marca:"MEMO2", nivel_escritura_ajuste_Mayo:"Diferenciada"},
+      {apellido:"Araoz Romero", nombre:"Luciana Jazmín", escritura_Mayo:"Silábica", escritura_Agosto:"Silábica alfabética"},
+      {apellido:"Bujía", nombre:"Dayara Selena", escritura_Mayo:"Diferenciada", escritura_Agosto:"Silábica alfabética"},
+      {apellido:"Fernández", nombre:"Renata Isabella", escritura_Mayo:"Diferenciada", escritura_Agosto:"Cuasialfabética"},
+      {apellido:"Gastón", nombre:"Katyra Shamile", marca:"CUD", nivel_escritura_ajuste_Mayo:"Diferenciada"},
+      {apellido:"Godoy", nombre:"Ámbar Isabella", escritura_Mayo:"Diferenciada", escritura_Agosto:"Cuasialfabética"},
+      {apellido:"Irles Quintana", nombre:"Catalina", escritura_Mayo:"Diferenciada", escritura_Agosto:"Cuasialfabética"},
+      {apellido:"Martínez", nombre:"Josefina Aylin", escritura_Mayo:"Diferenciada", escritura_Agosto:"Silábica alfabética"},
+      {apellido:"Miguez", nombre:"Victoria", escritura_Mayo:"Diferenciada", escritura_Agosto:"Alfabética"},
+      {apellido:"Montagut", nombre:"Delfina", escritura_Mayo:"Silábica", escritura_Agosto:"Cuasialfabética"},
+      {apellido:"Olivera Sánchez", nombre:"Yareli Jazmín", escritura_Mayo:"Silábica", escritura_Agosto:"Alfabética"},
+      {apellido:"Oyola", nombre:"Cielo Victoria", escritura_Mayo:"Diferenciada", trayectoria:"No asiste más (baja) — dato registrado en el corte de julio."},
+      {apellido:"Ramos", nombre:"Maite Sofía", escritura_Mayo:"Cuasialfabética", escritura_Agosto:"Alfabética"},
+      {apellido:"Rojas Acosta", nombre:"Paulina", escritura_Mayo:"Cuasialfabética", escritura_Agosto:"Alfabética"},
+      {apellido:"Villarreal", nombre:"Emili Matilda", escritura_Mayo:"Silábica", escritura_Agosto:"Cuasialfabética"},
+    ],
+  },
+  // 👇 Acá se van sumando los próximos informes (2°, 3°, 4°, 5°, 6°) a medida que lleguen.
+};
+async function importarSeccion(secId){
+  const imp=IMPORTS_PENDIENTES[secId];
+  if(!imp)return;
+  if(!confirm(`Se van a agregar ${imp.estudiantes.length} estudiantes a ${secId.replace(/([A-Z])$/,' Sección $1')}.\n\n${imp.descripcion}\n\nSi ya cargaste estos alumnos antes, se van a duplicar. ¿Continuar?`))return;
+  const prev=STATE.allData[secId]||[];
+  const grado=secId.slice(0,-1),seccion=secId.slice(-1);
+  const nuevos=imp.estudiantes.map((n,i)=>{
+    const{apellido,nombre,marca,trayectoria,...extras}=n;
+    return{
+      apellido,nombre,dni:"",marca:marca||"",grado,seccion,
+      indicadores:{},indicadores_ajuste:{},trayectoria:trayectoria||"",
+      ...extras,
+      id:Date.now()+i,
+    };
+  });
+  const upd=[...prev,...nuevos];
+  setState({allData:{...STATE.allData,[secId]:upd}});
+  await dbSet(`sec-${secId}`,JSON.stringify(upd));
+  alert(`Listo. Se cargaron ${nuevos.length} estudiantes en ${secId}.`);
+}
+
 function vistaCarga(){
   const secId=STATE.seccion.id;
   let ests=(STATE.allData[secId]||[]);
@@ -426,7 +485,12 @@ function vistaCarga(){
   else if(STATE.filtroMarca==="regulares")ests=ests.filter(e=>!e.marca);
   if(STATE.busqEst)ests=ests.filter(e=>`${e.apellido} ${e.nombre}`.toLowerCase().includes(STATE.busqEst.toLowerCase()));
   ests=ests.sort((a,b)=>a.apellido.localeCompare(b.apellido));
-  return`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+  const imp=IMPORTS_PENDIENTES[secId];
+  return`${imp?`<div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+    <div style="font-size:12px;color:#92400e"><b>📥 ${imp.titulo} detectado.</b> Podés importar los ${imp.estudiantes.length} estudiantes de un solo clic (${imp.descripcion}).</div>
+    <button onclick="importarSeccion('${secId}')" style="background:#d97706;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Source Sans 3',sans-serif">Importar ${imp.estudiantes.length} estudiantes</button>
+  </div>`:""}
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
       <input style="width:180px" value="${STATE.busqEst}" placeholder="Buscar estudiante..." oninput="setState({busqEst:this.value})"/>
       ${selectorCorte()}
